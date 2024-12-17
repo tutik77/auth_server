@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi-auth
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:1234@database:5432/Users
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  database:
+    image: postgres:latest
+    container_name: database
+    volumes:
+      - db:/var/lib/postgresql/data
+    ports:
+      - 5434:5432
+    environment:
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=Users
+    restart: always
+    networks:
+      - app-network
+
+  test_database:
+    image: postgres:latest
+    container_name: test_database
+    volumes:
+      - db_test:/var/lib/postgresql/data
+    ports:
+      - 5435:5432
+    environment:
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=Users
+    restart: always
+    networks:
+      - app-network
+
+volumes:
+  db:
+  db_test:
+
+networks:
+  app-network:
+    driver: bridge
